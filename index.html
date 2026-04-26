@@ -78,9 +78,14 @@
       background: #28a745;
       padding: 6px 10px;
       text-align: right;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
     }
 
-    .copy-btn {
+    .copy-btn,
+    .reset-btn {
+      width: auto;
       font-size: 12px;
       padding: 4px 10px;
       background: white;
@@ -89,6 +94,10 @@
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
+    }
+
+    .reset-btn {
+      color: #dc3545;
     }
 
     /* TEXT AREA */
@@ -163,13 +172,24 @@ async function translateText() {
     btn.className = "copy-btn";
 
     btn.onclick = () => {
-      const textToCopy = input + "\n\n" + translated;
+      const textToCopy = content.innerText.trim();
       navigator.clipboard.writeText(textToCopy);
+      document.getElementById("inputText").value = "";
       btn.innerText = "Copied!";
       setTimeout(() => btn.innerText = "Copy", 1500);
     };
 
+    const resetBtn = document.createElement("button");
+    resetBtn.innerText = "Reset";
+    resetBtn.className = "reset-btn";
+
+    resetBtn.onclick = () => {
+      document.getElementById("inputText").value = "";
+      card.remove();
+    };
+
     header.appendChild(btn);
+    header.appendChild(resetBtn);
 
     // CONTENT (TEXT)
     const content = document.createElement("div");
