@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Translator</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', system-ui, Arial;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 650px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .lang-select {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    select {
+      padding: 8px;
+      width: 48%;
+      border-radius: 6px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 110px;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .result-box {
+      margin-top: 15px;
+      background: #eef3ff;
+      padding: 10px;
+      border-radius: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    /* RESULT BLOCK */
+    .result-card {
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1px solid #ddd;
+    }
+
+    /* TOP BAR (COPY BUTTON AREA) */
+    .result-header {
+      background: #28a745;
+      padding: 6px 10px;
+      text-align: right;
+    }
+
+    .copy-btn {
+      font-size: 12px;
+      padding: 4px 10px;
+      background: white;
+      color: #28a745;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* TEXT AREA */
+    .result-content {
+      padding: 14px;
+      line-height: 1.7;
+      font-size: 16px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .result-content p {
+      margin: 0 0 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🌐 Mini Translator</h2>
+
+  <div class="lang-select">
+    <select id="fromLang">
+      <option value="en">English</option>
+      <option value="te">Telugu</option>
+      <option value="hi">Hindi</option>
+    </select>
+
+    <select id="toLang">
+      <option value="te">Telugu</option>
+      <option value="en">English</option>
+      <option value="hi">Hindi</option>
+    </select>
+  </div>
+
+  <textarea id="inputText" placeholder="Enter text..."></textarea>
+
+  <button onclick="translateText()">Translate</button>
+
+  <div id="results" class="result-box"></div>
+</div>
+
+<script>
+async function translateText() {
+  const input = document.getElementById("inputText").value.trim();
+  const from = document.getElementById("fromLang").value;
+  const to = document.getElementById("toLang").value;
+
+  if (!input) return alert("Enter text");
+
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=${from}|${to}`
+    );
+
+    const data = await res.json();
+    const translated = data.responseData.translatedText;
+
+    const resultBox = document.getElementById("results");
+
+    // MAIN CARD
+    const card = document.createElement("div");
+    card.className = "result-card";
+
+    // HEADER (COPY BUTTON)
+    const header = document.createElement("div");
+    header.className = "result-header";
+
+    const btn = document.createElement("button");
+    btn.innerText = "Copy";
+    btn.className = "copy-btn";
+
+    btn.onclick = () => {
+      const textToCopy = input + "\n\n" + translated;
+      navigator.clipboard.writeText(textToCopy);
+      btn.innerText = "Copied!";
+      setTimeout(() => btn.innerText = "Copy", 1500);
+    };
+
+    header.appendChild(btn);
+
+    // CONTENT (TEXT)
+    const content = document.createElement("div");
+    content.className = "result-content";
+    content.innerHTML = `
+      <p>${input}</p>
+      <p>${translated}</p>
+    `;
+
+    // APPEND STRUCTURE
+    card.appendChild(header);
+    card.appendChild(content);
+    resultBox.appendChild(card);
+
+  } catch (err) {
+    alert("Error translating");
+  }
+}
+</script>
+
+</body>
+</html>
