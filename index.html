@@ -2,41 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ajay Translator</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       font-family: 'Segoe UI', system-ui, Arial;
       background: #f4f6f8;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 18px;
     }
 
     .container {
-      width: 650px;
+      width: min(650px, 100%);
       background: white;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
 
+    h2 {
+      margin: 0 0 18px;
+      text-align: center;
+      font-size: 24px;
+    }
+
     .lang-select {
       display: flex;
+      gap: 12px;
       justify-content: space-between;
       margin-bottom: 15px;
     }
 
     select {
-      padding: 8px;
-      width: 48%;
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
       border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      background: white;
     }
 
     textarea {
       width: 100%;
-      height: 110px;
+      min-height: 120px;
+      resize: vertical;
       margin: 10px 0;
       padding: 10px;
       border-radius: 8px;
@@ -46,6 +65,7 @@
 
     button {
       width: 100%;
+      min-height: 44px;
       padding: 10px;
       background: #4285f4;
       color: white;
@@ -53,6 +73,11 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     .result-box {
@@ -87,7 +112,8 @@
     .reset-btn {
       width: auto;
       font-size: 12px;
-      padding: 4px 10px;
+      min-height: 32px;
+      padding: 4px 12px;
       background: white;
       color: #28a745;
       border: none;
@@ -111,6 +137,50 @@
 
     .result-content p {
       margin: 0 0 10px 0;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        align-items: flex-start;
+        padding: 12px;
+      }
+
+      .container {
+        padding: 16px;
+        border-radius: 10px;
+      }
+
+      h2 {
+        font-size: 21px;
+      }
+
+      .lang-select {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      textarea {
+        min-height: 150px;
+        font-size: 16px;
+      }
+
+      .result-box {
+        max-height: 42vh;
+      }
+
+      .result-header {
+        padding: 8px;
+      }
+
+      .copy-btn,
+      .reset-btn {
+        flex: 1;
+      }
+
+      .result-content {
+        padding: 12px;
+        font-size: 15px;
+      }
     }
   </style>
 </head>
@@ -136,7 +206,7 @@
 
   <textarea id="inputText" placeholder="Enter text..."></textarea>
 
-  <button onclick="translateText()">Translate</button>
+  <button id="translateBtn" onclick="translateText()">Translate</button>
 
   <div id="results" class="result-box"></div>
 </div>
@@ -146,16 +216,24 @@ async function translateText() {
   const input = document.getElementById("inputText").value.trim();
   const from = document.getElementById("fromLang").value;
   const to = document.getElementById("toLang").value;
+  const translateBtn = document.getElementById("translateBtn");
 
   if (!input) return alert("Enter text");
 
   try {
+    translateBtn.disabled = true;
+    translateBtn.innerText = "Translating...";
+
     const res = await fetch(
       `https://api.mymemory.translated.net/get?q=${encodeURIComponent(input)}&langpair=${from}|${to}`
     );
 
     const data = await res.json();
-    const translated = data.responseData.translatedText;
+    const translated = data.responseData && data.responseData.translatedText;
+
+    if (!translated) {
+      throw new Error("Translation missing");
+    }
 
     const resultBox = document.getElementById("results");
 
@@ -194,10 +272,15 @@ async function translateText() {
     // CONTENT (TEXT)
     const content = document.createElement("div");
     content.className = "result-content";
-    content.innerHTML = `
-      <p>${input}</p>
-      <p>${translated}</p>
-    `;
+
+    const inputPara = document.createElement("p");
+    inputPara.textContent = input;
+
+    const translatedPara = document.createElement("p");
+    translatedPara.textContent = translated;
+
+    content.appendChild(inputPara);
+    content.appendChild(translatedPara);
 
     // APPEND STRUCTURE
     card.appendChild(header);
@@ -206,6 +289,9 @@ async function translateText() {
 
   } catch (err) {
     alert("Error translating");
+  } finally {
+    translateBtn.disabled = false;
+    translateBtn.innerText = "Translate";
   }
 }
 </script>
