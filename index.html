@@ -285,7 +285,9 @@ async function translateText() {
     // APPEND STRUCTURE
     card.appendChild(header);
     card.appendChild(content);
+resultBox.innerHTML = "";
     resultBox.appendChild(card);
+
 
   } catch (err) {
     alert("Error translating");
